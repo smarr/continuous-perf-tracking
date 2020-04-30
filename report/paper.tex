@@ -1,0 +1,62 @@
+\documentclass[acmsmall,screen,review]{acmart}
+
+%% Rights management information.  This information is sent to you
+%% when you complete the rights form.  These commands have SAMPLE
+%% values in them; it is your responsibility as an author to replace
+%% the commands and values with those provided to you when you
+%% complete the rights form.
+\setcopyright{acmcopyright}
+\copyrightyear{2020}
+\acmYear{2020}
+\acmDOI{10.1145/TODO}
+
+
+\acmJournal{PACMPL}
+% \acmVolume{37}
+% \acmNumber{4}
+% \acmArticle{111}
+% \acmMonth{8}
+
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+\usepackage{tikz}
+\usepackage{xspace}
+\tikzstyle{every picture}+=[font=\sffamily]
+
+\input{gen-eval}
+
+
+\begin{document}
+
+\title{Continuous Performance Tracking for Better ``Everything''!}
+
+\author{Stefan Marr}
+\email{s.marr@kent.ac.uk}
+
+\keywords{benchmarking, continuous performance tracking}
+
+\maketitle
+
+\section{Introduction}
+
+\begin{figure}[h]
+  \centering
+  \Overview{}
+  \caption{
+    Results showing the benefit of C2 over C1
+    on the Are We Fast Yet benchmark suite.}
+  \Description{Boxplot with the results}
+\end{figure}
+
+% Use it in writing
+The C2 compiler improves performance by \SpeedupGMeanX.
+The Mandelbrot benchmark is slower and shows a speedup of \SpeedupMinX.
+The Bounce benchmark shows the highest speedup of \SpeedupMaxX.
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{sample-base}
+
+
+\end{document}
+\endinput
+%%
+%% End of file `sample-acmsmall.tex'.

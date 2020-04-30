@@ -1,3 +1,9 @@
 /benchmarks/build
 /benchmarks/benchmarks.jar
 /benchmark.data
+.Rhistory
+*-tikzDictionary
+/report/gen-eval.tex
+/report/overview.html
+/report/paper.pdf
+*.synctex*

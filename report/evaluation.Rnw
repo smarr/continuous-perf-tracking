@@ -1,0 +1,91 @@
+%!TEX root = paper.tex
+<<knitr-settings, echo=FALSE, include=FALSE>>=
+# load libraries, the data, and prepare it
+if (Sys.getenv("RSTUDIO") == "1") { setwd("/Users/smarr/Talks/MoreVMs-2020/src/report")
+} else {
+  opts_chunk$set(
+    fig.path="./figure/",
+    fig.keep='all',
+    dev=c('tikz'), #dev='pdf',c('tikz', 'svg'),
+    dev.args=list(pointsize=8, timestamp = FALSE),
+    echo=FALSE,
+    external=FALSE,
+    tidy=FALSE)
+
+  ## Make sure that TikZDevice is used for measuring size of latex labels
+  options(device = function(...) tikzDevice::tikz(tempfile(), ...))
+}
+source("data-processing.R", chdir=TRUE)
+
+data <- load_data_file("benchmark.data.bz2")
+data <- droplevels(subset(data,
+                          select = c(Value, Unit, Benchmark, VM, Iteration)))
+
+warm <- data %>%
+  filter(Iteration >= 200) %>%
+  droplevels()
+
+base <- warm %>%
+  filter(VM == "JavaC1") %>%
+  group_by(Benchmark) %>%
+  summarise(base_mean = mean(Value),
+            base_median = median(Value))
+
+norm <- warm %>%
+  left_join(base, by = c("Benchmark")) %>%
+  group_by(Benchmark) %>%
+  transform(ratio_mean = Value / base_mean,
+            ratio_median = Value / base_median,
+            speedup_median = base_median / Value)
+
+stats <- norm %>%
+  group_by(VM, Benchmark) %>%
+  summarise(
+    unit = Unit[1],
+    min = min(Value),
+    max = max(Value),
+    sd = sd(Value),
+    mean = mean(Value),
+    median = median(Value),
+    samples = length(Value),
+    ratio = median / base_median[1],
+    speedup = base_median[1] / median)
+
+
+stats_all <- stats %>%
+  group_by(VM) %>%
+  summarise(
+    unit = unit[1],
+    min = min(speedup),
+    max = max(speedup),
+    geomean = geometric.mean(speedup),
+    num_benchmarks = length(speedup))
+
+X2 <- function(x) {
+  round(x, digits = 2)
+}
+@
+
+\def\Overview{%
+<<overview, fig.height=3, fig.width=5.5>>=
+ggplot(norm, aes(speedup_median, Benchmark)) +
+  geom_vline(aes(xintercept=0.75), colour="#999999", linetype="dotted") +
+  geom_vline(aes(xintercept=1),    colour="#999999", linetype="solid") +
+  geom_vline(aes(xintercept=1.5),  colour="#999999", linetype="dotted") +
+  geom_vline(aes(xintercept=2),    colour="#999999", linetype="dotted") +
+  geom_vline(aes(xintercept=2.5),  colour="#999999", linetype="dotted") +
+  geom_boxploth(aes(colour = VM), outlier.size = 0.9, outlier.alpha = 0.6, width=0.7) +
+  scale_x_log10(breaks = c(0.5, 0.75, 1, 1.5, 2, 2.5)) +
+  coord_cartesian(xlim=c(0.5, 2.75)) +
+  scale_color_manual(values = c("#e9b96e", "#729fcf")) +
+  scale_fill_manual(values = c("#e9b96e", "#729fcf")) +
+  ylab("") +
+  theme_simple(8) +
+  theme(legend.position = "none", axis.ticks.y=element_blank(), axis.line.y.left=element_blank(), axis.line.x.bottom=element_blank())
+@
+}%
+
+% Generate LaTeX macros (from R)
+\newcommand{\SpeedupGMeanX}{$\Sexpr{X2(filter(stats_all, VM=="JavaTiered")$geomean)}$x\xspace}
+\newcommand{\SpeedupMinX}{$\Sexpr{X2(filter(stats_all, VM=="JavaTiered")$min)}$x\xspace}
+\newcommand{\SpeedupMaxX}{$\Sexpr{X2(filter(stats_all, VM=="JavaTiered")$max)}$x\xspace}
